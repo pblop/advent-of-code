@@ -31,7 +31,7 @@ console = Console()
 
 def get_cookie():
   # Set the session cookie in the request headers
-  cookie = os.environ.get("AOC_SESSION")
+  cookie = os.environ.get("AOC_SESSION_COOKIE")
   if not cookie:
     # Try to read the cookie from a file
     try:
@@ -39,39 +39,61 @@ def get_cookie():
         lines = cookie_file.read().splitlines()
         # Find the line with the cookie
         for line in lines:
-          if line.startswith("AOC_SESSION="):
+          if line.startswith("AOC_SESSION_COOKIE="):
             cookie = line.split("=")[1]
             break
         else:
-          print("Error: AOC_SESSION environment variable not set, and .env file "
+          print("Error: AOC_SESSION_COOKIE environment variable not set, and .env file "
                 "does not contain the cookie")
           sys.exit(1)
     except FileNotFoundError:
-      print("Error: AOC_SESSION environment variable not set, and .env file not found")
+      print("Error: AOC_SESSION_COOKIE environment variable not set, and .env file not found")
       sys.exit(1)
 
   return cookie
 
 @app.command()
-def fetch(year: int, day: int):
-  input_url = f"https://adventofcode.com/{year}/day/{day}/input"
-  headers = {"Cookie": f"session={get_cookie()}"}
-  print("Dowloading puzzle input...", end='', flush=True)
-  response = requests.get(input_url, headers=headers, timeout=120)
-  print("done", flush=True)
-  if response.status_code != 200:
-    print(f"\nError: {response.status_code}")
-    sys.exit(1)
-
+def fetch(year: int, day: int,
+          force: Annotated[bool, typer.Option(help="Forces the redownload/recreation of the files")] = False):
   # Make folder structure
-  folder = Path(f"./problems/year{year}/day{day}")
+  folder = Path(f"./problems/{year}/{day:02}")
   folder.mkdir(parents=True, exist_ok=True)
+  input_file = folder / "input.txt"
+  tests_file = folder / "tests.toml"
 
-  print("Writing puzzle input...", end='', flush=True)
-  output_file = folder / "input.txt"
-  with open(output_file, "w", encoding="utf-8") as f:
-    f.write(response.text)
-  print("done", flush=True)
+  if force or not input_file.exists():
+    input_url = f"https://adventofcode.com/{year}/day/{day}/input"
+    headers = {"Cookie": f"session={get_cookie()}"}
+    print("Dowloading puzzle input...", end='', flush=True)
+    response = requests.get(input_url, headers=headers, timeout=120)
+    print("done", flush=True)
+    if response.status_code == 404:
+      print("Error: The puzzle input is not yet available")
+      sys.exit(1)
+    elif response.status_code != 200:
+      print(f"\nError: {response.status_code}")
+      sys.exit(1)
+
+    print("Writing puzzle input...", end='', flush=True)
+    with open(input_file, "w", encoding="utf-8") as f:
+      f.write(response.text)
+  else:
+    print("Input file already exists, skipping")
+
+  if force or not tests_file.exists():
+    with open(tests_file, "w", encoding="utf-8") as f:
+      f.write("""[test_01]
+  part = 1
+  input = \"\"\"\"\"\"
+  expected = 0
+
+  [test_02]
+  part = 2
+  input = \"\"\"\"\"\"
+  expected = 0 """)
+    print("done", flush=True)
+  else:
+    print("Tests file already exists, skipping")
 
 @app.command()
 def start(lang: str, year: int, day: int):
@@ -216,7 +238,6 @@ def run(lang: str, year: int, day: int, part: int,
     console.print("Submitting result...")
     submit_result(year, day, part, result)
 
-  
 
 if __name__ == "__main__":
   app()
