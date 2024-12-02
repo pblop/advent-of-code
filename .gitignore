@@ -1,2 +1,3 @@
 # Ignore all input files
 input*.txt
+.env
