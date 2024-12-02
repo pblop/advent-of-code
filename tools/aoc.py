@@ -158,11 +158,11 @@ def do_test(lang: str, year: int, day: int, test_name: str, test: dict):
 
   if not expected or result != expected:
     if debug_output:
-      table.add_row("  [red]Debug output[/red]")
+      table.add_row(f"  [{status[1]}]Debug output[/{status[1]}]")
       console.print(table)
       console.print(debug_output)
     else:
-      table.add_row("  [red]Debug output[/red]", "[italic]no output[/italic]")
+      table.add_row(f"  [{status[1]}]Debug output[/{status[1]}]", "[italic]no output[/italic]")
       console.print(table)
   else:
     console.print(table)
