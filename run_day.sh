@@ -48,6 +48,7 @@ if [ ! -f "${lang_file[$lang]}" ]; then
 fi
 
 for input in input*.txt; do
-  echo "Running $input"
-  cat $input | ./"${lang_file[$lang]}"
+  input_num="${input:5:1}"
+  echo "Running $input for input $input_num"
+  cat $input | ./"${lang_file[$lang]}" $input_num
 done
