@@ -1,6 +1,6 @@
 #!/usr/bin/env deno run
 
-import { runner } from "../../../../../lib/deno.ts";
+import { runner } from "../../../../lib/deno.ts";
 
 function solvePt1(input_data: string, args?: string[]): number {
 	return -1;

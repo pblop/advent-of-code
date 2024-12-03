@@ -98,11 +98,9 @@ def fetch(year: int, day: int,
 @app.command()
 def start(lang: str, year: int, day: int):
   # Download puzzle input if it doesn't exist
-  input_file = Path(f"./problems/{year}/{day}/input.txt")
-  if not input_file.exists():
-    fetch(year, day)
+  fetch(year, day)
   
-  solutions_folder = Path(f"./solutions/{lang}/{year}/{day}")
+  solutions_folder = Path(f"./solutions/{lang}/{year}/{day:02d}")
   if solutions_folder.exists():
     print("Error: Solutions folder already exists")
     sys.exit(1)
@@ -115,7 +113,7 @@ def start(lang: str, year: int, day: int):
   # Copy template files to solutions folder
   shutil.copytree(template_folder, solutions_folder)
 
-def run_day(lang: str, year: int, day: int, part: int, input_text: str) -> [int, str]:
+def run_day(lang: str, year: int, day: int, part: int, input_text: str) -> tuple[int, str]:
   solution_folder = Path(f"./solutions/{lang}/{year}/{day:02}")
   if not solution_folder.exists():
     print(f"Error: Solution folder ({solution_folder}) not found")
