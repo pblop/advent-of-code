@@ -23,6 +23,7 @@ from rich.console import Console
 from rich.table import Table
 from rich.live import Live
 from rich.prompt import Confirm
+from rich.text import Text
 from bs4 import BeautifulSoup
 from typing_extensions import Annotated
 
@@ -126,10 +127,14 @@ def run_day(lang: str, year: int, day: int, part: int, input_text: str) -> tuple
     sys.exit(1)
 
   p = subprocess.run([solution_folder / command, str(part)],
-        input=input_text, capture_output=True, text=True, check=True)
+        input=input_text, capture_output=True, text=True, check=False)
 
-  stdout = p.stdout.strip()
-  stderr = p.stderr.strip()
+  if p.returncode == 0:
+    stdout = p.stdout.strip()
+    stderr = p.stderr.strip()
+  else:
+    stdout = -10
+    stderr = p.stderr.strip()
 
   return int(stdout), stderr
 
@@ -158,7 +163,7 @@ def do_test(lang: str, year: int, day: int, test_name: str, test: dict):
     if debug_output:
       table.add_row(f"  [{status[1]}]Debug output[/{status[1]}]")
       console.print(table)
-      console.print(debug_output)
+      console.print(Text.from_ansi(debug_output))
     else:
       table.add_row(f"  [{status[1]}]Debug output[/{status[1]}]", "[italic]no output[/italic]")
       console.print(table)
@@ -167,7 +172,8 @@ def do_test(lang: str, year: int, day: int, test_name: str, test: dict):
 
 @app.command()
 def test(lang: str, year: int, day: int,
-         test: Annotated[str, typer.Option(help="The name of the test to run")] = "all"
+         test: Annotated[str, typer.Option(help="The name of the test to run")] = "all",
+         part: Annotated[int, typer.Option(help="The number of the part to run the tests")] = None,
          ):
   problems_folder = Path(f"./problems/{year}/{day:02d}")
 
@@ -177,12 +183,13 @@ def test(lang: str, year: int, day: int,
   with console.status("Running tests...", spinner="dots"):
     if test == "all":
       for k, v in tests.items():
-        do_test(lang, year, day, k, v)
+        if part == 3 or part == v["part"]:
+          do_test(lang, year, day, k, v)
     else:
-      if test not in tests:
-        console.print(f"Error: Test '{test}' not found", style="bold red")
-      else:
+      if test in tests and (part == None or part == tests[test]["part"]):
         do_test(lang, year, day, test, tests[test])
+      else:
+        console.print(f"Error: Test '{test}' not found (with part '{part}')", style="bold red")
 
 def submit_result(year: int, day: int, part: int, result: int):
   url = f"https://adventofcode.com/{year}/day/{day}/answer"
