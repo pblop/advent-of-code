@@ -183,10 +183,10 @@ def test(lang: str, year: int, day: int,
   with console.status("Running tests...", spinner="dots"):
     if test == "all":
       for k, v in tests.items():
-        if part == 3 or part == v["part"]:
+        if part is None or part == v["part"]:
           do_test(lang, year, day, k, v)
     else:
-      if test in tests and (part == None or part == tests[test]["part"]):
+      if test in tests and (part is None or part == tests[test]["part"]):
         do_test(lang, year, day, test, tests[test])
       else:
         console.print(f"Error: Test '{test}' not found (with part '{part}')", style="bold red")
