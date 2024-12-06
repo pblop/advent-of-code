@@ -87,31 +87,25 @@ function findLoop(
 	oy: number,
 	data: string[][],
 ): boolean {
-	const positions: [number, number][] = [];
+	const posDir: { [key: string]: [number, number][] } = {};
 	const [rows, cols] = [data.length, data[0].length];
 	let [y, x, dy, dx] = [y_, x_, dy_, dx_];
 
 	// Move!
-	let loop = 0;
 	while (true) {
 		// Bounds
 		if (x < 0 || x >= cols || y < 0 || y >= rows) break;
-		// console.error(positions, [x, y]);
-		// print(data, positions);
 
-		// Found a loop
-		if (
-			positions.some(
-				([px, py], i) => px === x && py === y && i !== positions.length - 1,
-			)
-		)
-			loop++;
-		else loop = 0;
+		const posStr = `${x},${y}`;
+		posDir[posStr] ??= [];
 
-		if (loop === 10) return true;
+		// Found a loop (being in the same position and direction). Optimized
+		// with a hash map.
+		if (posDir[posStr].some(([dx_, dy_]) => dx_ === dx && dy_ === dy))
+			return true;
 
-		positions.push([x, y]);
-		allPositions.add(`${x},${y}`);
+		posDir[posStr].push([dx, dy]);
+		allPositions.add(posStr);
 
 		const [nx, ny] = [x + dx, y + dy];
 		// Check if we wil hit a wall
