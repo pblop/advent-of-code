@@ -16,6 +16,7 @@ import os
 import shutil
 import subprocess
 import re
+import time
 
 import typer
 import requests
@@ -114,7 +115,7 @@ def start(lang: str, year: int, day: int):
   # Copy template files to solutions folder
   shutil.copytree(template_folder, solutions_folder)
 
-def run_day(lang: str, year: int, day: int, part: int, input_text: str) -> tuple[int, str]:
+def run_day(lang: str, year: int, day: int, part: int, input_text: str) -> tuple[int, str, float]:
   solution_folder = Path(f"./solutions/{lang}/{year}/{day:02}")
   if not solution_folder.exists():
     print(f"Error: Solution folder ({solution_folder}) not found")
@@ -126,8 +127,10 @@ def run_day(lang: str, year: int, day: int, part: int, input_text: str) -> tuple
     print(f"Error: Language '{lang}' not supported")
     sys.exit(1)
 
+  start_time = time.time()
   p = subprocess.run([solution_folder / command, str(part)],
         input=input_text, capture_output=True, text=True, check=False)
+  end_time = time.time()
 
   if p.returncode == 0:
     stdout = p.stdout.strip()
@@ -136,7 +139,7 @@ def run_day(lang: str, year: int, day: int, part: int, input_text: str) -> tuple
     stdout = -10
     stderr = p.stderr.strip()
 
-  return int(stdout), stderr
+  return int(stdout), stderr, end_time - start_time
 
 def do_test(lang: str, year: int, day: int, test_name: str, test: dict):
   part, input_text= test["part"], test["input"]
@@ -145,10 +148,13 @@ def do_test(lang: str, year: int, day: int, test_name: str, test: dict):
   table = Table(show_header=False, show_edge=False, box=None, min_width=50, pad_edge=False)
   table.add_column("col1", justify="left")
   table.add_column("col2", justify="right")
+  table2 = Table(show_header=False, show_edge=False, box=None, min_width=50, pad_edge=False)
+  table2.add_column("col1", justify="left")
+  table2.add_column("col2", justify="right")
 
   test_info = f"Test [bold cyan]{test_name}[/bold cyan] (part [bold red]{part}[/bold red])..."
 
-  result, debug_output = run_day(lang, year, day, part, input_text)
+  result, debug_output, secs = run_day(lang, year, day, part, input_text)
 
   if expected:
     status = ("passed", "bold green") if result == expected else ("failed", "bold red")
@@ -169,6 +175,10 @@ def do_test(lang: str, year: int, day: int, test_name: str, test: dict):
       console.print(table)
   else:
     console.print(table)
+
+  table2.add_row("  [blue]Time taken[/blue]", f"[blue italic]{secs:.6f} s[/blue italic]")
+  console.print(table2)
+
 
 @app.command()
 def test(lang: str, year: int, day: int,
@@ -220,7 +230,7 @@ def run(lang: str, year: int, day: int, part: int,
   with open(input_file, "r", encoding="utf-8") as f:
     input_text = f.read()
 
-  result, debug_output = run_day(lang, year, day, part, input_text)
+  result, debug_output, secs = run_day(lang, year, day, part, input_text)
 
   table = Table(show_header=False, show_edge=False, box=None, min_width=50, pad_edge=False)
   table.add_column("col1", justify="left")
@@ -237,6 +247,7 @@ def run(lang: str, year: int, day: int, part: int,
     table.add_column("col1", justify="left")
     table.add_column("col2", justify="right")
     table.add_row("  [green bold]Result[/green bold]", f"[green bold]{result}[/green bold]")
+    table.add_row("  [blue]Time taken[/blue]", f"[blue italic]{secs:.6f} s[/blue italic]")
     console.print(table)
   
   if submit:
