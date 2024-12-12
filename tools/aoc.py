@@ -136,7 +136,7 @@ def run_day(lang: str, year: int, day: int, part: int, input_text: str) -> tuple
     stdout = p.stdout.strip()
     stderr = p.stderr.strip()
   else:
-    stdout = -10
+    stdout = -1
     stderr = p.stderr.strip()
 
   return int(stdout), stderr, end_time - start_time
@@ -241,7 +241,7 @@ def run(lang: str, year: int, day: int, part: int,
     table.add_row("  [red]Debug output[/red]", "[italic]no output[/italic]" if not debug_output else "")
     console.print(table)
     if debug_output:
-      console.print(debug_output)
+      console.print(Text.from_ansi(debug_output))
 
     table = Table(show_header=False, show_edge=False, box=None, min_width=50, pad_edge=False)
     table.add_column("col1", justify="left")

@@ -1,4 +1,4 @@
-type SolveFunction = (input_data: string, args?: string[]) => number;
+type SolveFunction = (input_data: string, args?: string[]) => number | bigint;
 
 async function readFromStdin() {
 	let input_data = "";
@@ -12,11 +12,15 @@ async function readFromStdin() {
 
 export async function runner(part1Fn: SolveFunction, part2Fn: SolveFunction) {
 	const partn = Deno.args[0];
-	const input_data = await readFromStdin();
+	const input_data = (await readFromStdin()).trim();
 
 	const fn = partn === "1" ? part1Fn : part2Fn;
 	const result = fn(input_data, Deno.args.slice(1));
-	console.log(result);
+	if (typeof result === "bigint") {
+		console.log(result.toString().replace(/n$/, ""));
+	} else {
+		console.log(result);
+	}
 
 	Deno.exit(0);
 }
