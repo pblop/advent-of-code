@@ -34,52 +34,51 @@ function solvePt1(input_data: string, args?: string[]): number {
 	return stones.length;
 }
 
-function applyRulesFast(
-	stones: BigUint64Array,
-	length: number,
-): [BigUint64Array, number] {
-	const newStones = new BigUint64Array(length * 2);
-	let newLength = 0;
+function getOrZero(map: Map<number, number>, key: number): number {
+	return map.get(key) ?? 0;
+}
+function addToKey(map: Map<number, number>, key: number, value: number) {
+	map.set(key, getOrZero(map, key) + value);
+}
 
-	for (let i = 0; i < length; i++) {
-		if (stones[i] === 0n) {
-			newStones[newLength++] = 1n;
+function applyRulesFast(numEach: Map<number, number>): Map<number, number> {
+	const newNumEach: Map<number, number> = new Map();
+
+	for (const [marking, count] of Array.from(numEach.entries())) {
+		// console.error(`Marking: ${marking}, Count: ${count}`);
+		if (marking === 0) {
+			addToKey(newNumEach, 1, count);
 		} else {
-			const numDigits = Math.floor(Math.log10(Number(stones[i])) + 1);
+			const numDigits = Math.floor(Math.log10(marking) + 1);
 			if (numDigits % 2 === 0) {
-				const halfDivisor = BigInt(10 ** Math.floor(numDigits / 2));
-				newStones[newLength++] = stones[i] / halfDivisor;
-				newStones[newLength++] = stones[i] % halfDivisor;
+				const halfDivisor = 10 ** Math.floor(numDigits / 2);
+				addToKey(newNumEach, Math.floor(marking / halfDivisor), count);
+				addToKey(newNumEach, marking % halfDivisor, count);
 			} else {
-				newStones[newLength++] = stones[i] * 2024n;
+				addToKey(newNumEach, marking * 2024, count);
 			}
 		}
 	}
-	return [newStones, newLength];
+
+	return newNumEach;
 }
 
-function printStones(stones: BigUint64Array, length: number) {
-	let str = "";
-	for (let i = 0; i < length; i++) {
-		str += `${stones[i]} `;
+function solvePt2(input_data: string, args?: string[]): bigint {
+	const data = input_data.split(" ").map(Number);
+
+	let numEach: Map<number, number> = new Map();
+	for (const stone of data) {
+		addToKey(numEach, stone, 1);
 	}
-	console.error(str);
-}
 
-function solvePt2(input_data: string, args?: string[]): number {
-	const data = input_data.split(" ").map(BigInt);
+	const calcLength = (x: Map<number, number>) =>
+		x.values().reduce((acc, val) => acc + BigInt(val), 0n);
 
-	let stones = new BigUint64Array(data);
-	let length = data.length;
-
-	// printStones(stones, length);
 	for (let i = 0; i < 75; i++) {
-		[stones, length] = applyRulesFast(stones, length);
-		console.error(`${i} ${length}`);
-		// printStones(stones, length);
+		numEach = applyRulesFast(numEach);
 	}
 
-	return length;
+	return calcLength(numEach);
 }
 
-runner(solvePt1, solvePt2);
+runner(solvePt2, solvePt2);
