@@ -140,9 +140,9 @@ function solvePt2(input_data: string, args?: string[]): number {
 	findLoop(x, y, dx, dy, -100, -100, data);
 
 	for (let i = 0; i < allPositions.size; i++) {
-		Deno.stderr.writeSync(
-			new TextEncoder().encode(`i=${i}/size=${allPositions.size}\n`),
-		);
+		// Deno.stderr.writeSync(
+		// 	new TextEncoder().encode(`i=${i}/size=${allPositions.size}\n`),
+		// );
 		const [px, py] = Array.from(allPositions)[i].split(",").map(Number);
 		if (
 			px >= 0 &&

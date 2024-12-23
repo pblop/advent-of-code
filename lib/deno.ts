@@ -14,12 +14,15 @@ export async function runner(part1Fn: SolveFunction, part2Fn: SolveFunction) {
 	const partn = Deno.args[0];
 	const input_data = (await readFromStdin()).trim();
 
+	const consolelog = console.log;
+	console.log = console.error;
+
 	const fn = partn === "1" ? part1Fn : part2Fn;
 	const result = fn(input_data, Deno.args.slice(1));
 	if (typeof result === "bigint") {
-		console.log(result.toString().replace(/n$/, ""));
+		consolelog(result.toString().replace(/n$/, ""));
 	} else {
-		console.log(result);
+		consolelog(result);
 	}
 
 	Deno.exit(0);
