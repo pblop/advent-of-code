@@ -1,7 +1,7 @@
 #!/usr/bin/env deno run
 
 import { runner } from "../../../../lib/deno.ts";
-import { read2DGrid, type Position } from "../../../../lib/deno2d.ts";
+import { read2DGrid, read2DGridString, type Position } from "../../../../lib/deno2d.ts";
 
 type AntennaDict = Record<string, Position[]>;
 type Antinodes = Position[];
@@ -54,11 +54,7 @@ function getAntennaDict(puzzle_input: string[][]): AntennaDict {
 
 // console.log(rx1, rx2);
 
-function calculateAntinodes(
-	antennaDict: AntennaDict,
-	w: number,
-	h: number,
-): Antinodes {
+function calculateAntinodes(antennaDict: AntennaDict, w: number, h: number): Antinodes {
 	// A unique list of antinodes inside the grid
 	const antinodes: Antinodes = [];
 	const antinodesSet = new Set<string>();
@@ -103,14 +99,10 @@ function calculateAntinodes(
 }
 
 function solvePt1(input_data: string, args?: string[]): number {
-	const puzzle_input = read2DGrid(input_data);
+	const puzzle_input = read2DGridString(input_data);
 
 	const antennaDict = getAntennaDict(puzzle_input);
-	const antinodes = calculateAntinodes(
-		antennaDict,
-		puzzle_input[0].length,
-		puzzle_input.length,
-	);
+	const antinodes = calculateAntinodes(antennaDict, puzzle_input[0].length, puzzle_input.length);
 
 	console.log("Antenna dict", antennaDict);
 	console.log("Antinodes", antinodes);
@@ -118,11 +110,7 @@ function solvePt1(input_data: string, args?: string[]): number {
 	return antinodes.length;
 }
 
-function calculateAntinodes2_Bad(
-	antennaDict: AntennaDict,
-	w: number,
-	h: number,
-): Antinodes {
+function calculateAntinodes2_Bad(antennaDict: AntennaDict, w: number, h: number): Antinodes {
 	// A unique list of antinodes inside the grid
 	const antinodes: Antinodes = [];
 	const antinodesSet = new Set<string>();
@@ -182,9 +170,7 @@ class Fraction {
 	}
 
 	add(fraction: Fraction): Fraction {
-		const numerator =
-			this.numerator * fraction.denominator +
-			fraction.numerator * this.denominator;
+		const numerator = this.numerator * fraction.denominator + fraction.numerator * this.denominator;
 		const denominator = this.denominator * fraction.denominator;
 
 		return new Fraction(numerator, denominator);
@@ -197,10 +183,7 @@ class Fraction {
 		return new Fraction(-this.numerator, this.denominator, false);
 	}
 	mul(fraction: Fraction): Fraction {
-		return new Fraction(
-			this.numerator * fraction.numerator,
-			this.denominator * fraction.denominator,
-		);
+		return new Fraction(this.numerator * fraction.numerator, this.denominator * fraction.denominator);
 	}
 	mulInt(n: number): Fraction {
 		return this.mul(new Fraction(n, 1));
@@ -218,11 +201,7 @@ class Fraction {
 	}
 }
 
-function calculateAntinodes2(
-	antennaDict: AntennaDict,
-	w: number,
-	h: number,
-): Antinodes {
+function calculateAntinodes2(antennaDict: AntennaDict, w: number, h: number): Antinodes {
 	// A unique list of antinodes inside the grid
 	const antinodes: Antinodes = [];
 	const antinodesSet = new Set<string>();
@@ -264,14 +243,10 @@ function calculateAntinodes2(
 }
 
 function solvePt2(input_data: string, args?: string[]): number {
-	const puzzle_input = read2DGrid(input_data);
+	const puzzle_input = read2DGridString(input_data);
 
 	const antennaDict = getAntennaDict(puzzle_input);
-	const antinodes = calculateAntinodes2(
-		antennaDict,
-		puzzle_input[0].length,
-		puzzle_input.length,
-	);
+	const antinodes = calculateAntinodes2(antennaDict, puzzle_input[0].length, puzzle_input.length);
 
 	console.log("Antenna dict", antennaDict);
 	console.log("Antinodes", antinodes);
