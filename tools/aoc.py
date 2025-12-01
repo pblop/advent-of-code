@@ -31,6 +31,7 @@ from typing_extensions import Annotated
 app = typer.Typer()
 console = Console()
 
+
 def get_cookie():
   # Set the session cookie in the request headers
   cookie = os.environ.get("AOC_SESSION_COOKIE")
@@ -45,18 +46,28 @@ def get_cookie():
             cookie = line.split("=")[1]
             break
         else:
-          print("Error: AOC_SESSION_COOKIE environment variable not set, and .env file "
-                "does not contain the cookie")
+          print(
+            "Error: AOC_SESSION_COOKIE environment variable not set, and .env file "
+            "does not contain the cookie"
+          )
           sys.exit(1)
     except FileNotFoundError:
-      print("Error: AOC_SESSION_COOKIE environment variable not set, and .env file not found")
+      print(
+        "Error: AOC_SESSION_COOKIE environment variable not set, and .env file not found"
+      )
       sys.exit(1)
 
   return cookie
 
+
 @app.command()
-def fetch(year: int, day: int,
-          force: Annotated[bool, typer.Option(help="Forces the redownload/recreation of the files")] = False):
+def fetch(
+  year: int,
+  day: int,
+  force: Annotated[
+    bool, typer.Option(help="Forces the redownload/recreation of the files")
+  ] = False,
+):
   # Make folder structure
   folder = Path(f"./problems/{year}/{day:02}")
   folder.mkdir(parents=True, exist_ok=True)
@@ -66,7 +77,7 @@ def fetch(year: int, day: int,
   if force or not input_file.exists():
     input_url = f"https://adventofcode.com/{year}/day/{day}/input"
     headers = {"Cookie": f"session={get_cookie()}"}
-    print("Dowloading puzzle input...", end='', flush=True)
+    print("Dowloading puzzle input...", end="", flush=True)
     response = requests.get(input_url, headers=headers, timeout=120)
     print("done", flush=True)
     if response.status_code == 404:
@@ -76,7 +87,7 @@ def fetch(year: int, day: int,
       print(f"\nError: {response.status_code}")
       sys.exit(1)
 
-    print("Writing puzzle input...", end='', flush=True)
+    print("Writing puzzle input...", end="", flush=True)
     with open(input_file, "w", encoding="utf-8") as f:
       f.write(response.text)
   else:
@@ -97,11 +108,12 @@ def fetch(year: int, day: int,
   else:
     print("Tests file already exists, skipping")
 
+
 @app.command()
 def start(lang: str, year: int, day: int):
   # Download puzzle input if it doesn't exist
   fetch(year, day)
-  
+
   solutions_folder = Path(f"./solutions/{lang}/{year}/{day:02d}")
   if solutions_folder.exists():
     print("Error: Solutions folder already exists")
@@ -111,25 +123,56 @@ def start(lang: str, year: int, day: int):
   if not template_folder.exists():
     print(f"Error: Template folder for language '{lang}' not found")
     sys.exit(1)
-  
+
   # Copy template files to solutions folder
   shutil.copytree(template_folder, solutions_folder)
 
-def run_day(lang: str, year: int, day: int, part: int, input_text: str) -> tuple[int, str, float]:
+
+def run_day(
+  lang: str, year: int, day: int, part: int, input_text: str
+) -> tuple[int, str, float]:
   solution_folder = Path(f"./solutions/{lang}/{year}/{day:02}")
   if not solution_folder.exists():
     print(f"Error: Solution folder ({solution_folder}) not found")
     sys.exit(1)
 
+  build_commands = []
+  file = ""
   if lang == "deno":
-    command = "main.ts"
+    file = "./main.ts"
+  elif lang == "rust":
+    build_commands = ["cargo build --release"]
+    file = "./target/release/rust"
   else:
     print(f"Error: Language '{lang}' not supported")
     sys.exit(1)
 
+  # Run the build commands
+  for command in build_commands:
+    start_time = time.time()
+    p = subprocess.run(
+      command.split(),
+      input=input_text,
+      capture_output=True,
+      text=True,
+      check=False,
+      cwd=solution_folder,
+    )
+    end_time = time.time()
+    if p.returncode != 0:
+      end_time = time.time()
+      return -1, p.stderr.strip(), end_time - start_time
+
+  # Run the last command and capture output
   start_time = time.time()
-  p = subprocess.run([solution_folder / command, str(part)],
-        input=input_text, capture_output=True, text=True, check=False)
+  p = subprocess.run(
+    [file, str(part)],
+    input=input_text,
+    capture_output=True,
+    text=True,
+    check=False,
+    cwd=solution_folder,
+  )
   end_time = time.time()
 
   if p.returncode == 0:
@@ -141,18 +184,25 @@ def run_day(lang: str, year: int, day: int, part: int, input_text: str) -> tuple
 
   return int(stdout), stderr, end_time - start_time
 
+
 def do_test(lang: str, year: int, day: int, test_name: str, test: dict):
-  part, input_text= test["part"], test["input"]
+  part, input_text = test["part"], test["input"]
   expected = test.get("expected", None)
 
-  table = Table(show_header=False, show_edge=False, box=None, min_width=50, pad_edge=False)
+  table = Table(
+    show_header=False, show_edge=False, box=None, min_width=50, pad_edge=False
+  )
   table.add_column("col1", justify="left")
   table.add_column("col2", justify="right")
-  table2 = Table(show_header=False, show_edge=False, box=None, min_width=50, pad_edge=False)
+  table2 = Table(
+    show_header=False, show_edge=False, box=None, min_width=50, pad_edge=False
+  )
   table2.add_column("col1", justify="left")
   table2.add_column("col2", justify="right")
 
-  test_info = f"Test [bold cyan]{test_name}[/bold cyan] (part [bold red]{part}[/bold red])..."
+  test_info = (
+    f"Test [bold cyan]{test_name}[/bold cyan] (part [bold red]{part}[/bold red])..."
+  )
 
   result, debug_output, secs = run_day(lang, year, day, part, input_text)
 
@@ -171,20 +221,29 @@ def do_test(lang: str, year: int, day: int, test_name: str, test: dict):
       console.print(table)
       console.print(Text.from_ansi(debug_output))
     else:
-      table.add_row(f"  [{status[1]}]Debug output[/{status[1]}]", "[italic]no output[/italic]")
+      table.add_row(
+        f"  [{status[1]}]Debug output[/{status[1]}]", "[italic]no output[/italic]"
+      )
       console.print(table)
   else:
     console.print(table)
 
-  table2.add_row("  [blue]Time taken[/blue]", f"[blue italic]{secs:.6f} s[/blue italic]")
+  table2.add_row(
+    "  [blue]Time taken[/blue]", f"[blue italic]{secs:.6f} s[/blue italic]"
+  )
   console.print(table2)
 
 
 @app.command()
-def test(lang: str, year: int, day: int,
-         test: Annotated[str, typer.Option(help="The name of the test to run")] = "all",
-         part: Annotated[int, typer.Option(help="The number of the part to run the tests")] = None,
-         ):
+def test(
+  lang: str,
+  year: int,
+  day: int,
+  test: Annotated[str, typer.Option(help="The name of the test to run")] = "all",
+  part: Annotated[
+    int, typer.Option(help="The number of the part to run the tests")
+  ] = None,
+):
   problems_folder = Path(f"./problems/{year}/{day:02d}")
 
   with open(problems_folder / "tests.toml", "r", encoding="utf-8") as f:
@@ -199,31 +258,37 @@ def test(lang: str, year: int, day: int,
       if test in tests and (part is None or part == tests[test]["part"]):
         do_test(lang, year, day, test, tests[test])
       else:
-        console.print(f"Error: Test '{test}' not found (with part '{part}')", style="bold red")
+        console.print(
+          f"Error: Test '{test}' not found (with part '{part}')", style="bold red"
+        )
+
 
 def submit_result(year: int, day: int, part: int, result: int):
   url = f"https://adventofcode.com/{year}/day/{day}/answer"
-  headers = {
-    "Cookie": f"session={get_cookie()}"
-  }
-  data = {
-    "level": part,
-    "answer": result
-  }
+  headers = {"Cookie": f"session={get_cookie()}"}
+  data = {"level": part, "answer": result}
   response = requests.post(url, headers=headers, data=data, timeout=120)
 
   # Find the response message
   bs = BeautifulSoup(response.text, "html.parser")
   response_message = bs.find("main").find("article").text
-  
+
   # [Return to Day \d+] replace with ""
   response_message = re.sub(r"\[Return to Day \d+\]", "", response_message)
-  
+
   console.print(response_message)
 
+
 @app.command()
-def run(lang: str, year: int, day: int, part: int,
-        submit: Annotated[bool, typer.Option(help="Whether to submit the result or not")] = False):
+def run(
+  lang: str,
+  year: int,
+  day: int,
+  part: int,
+  submit: Annotated[
+    bool, typer.Option(help="Whether to submit the result or not")
+  ] = False,
+):
   problems_folder = Path(f"./problems/{year}/{day:02d}")
   input_file = problems_folder / "input.txt"
 
@@ -232,24 +297,37 @@ def run(lang: str, year: int, day: int, part: int,
 
   result, debug_output, secs = run_day(lang, year, day, part, input_text)
 
-  table = Table(show_header=False, show_edge=False, box=None, min_width=50, pad_edge=False)
+  table = Table(
+    show_header=False, show_edge=False, box=None, min_width=50, pad_edge=False
+  )
   table.add_column("col1", justify="left")
   table.add_column("col2", justify="right")
 
   with console.status("Running solution...", spinner="dots"):
-    table.add_row(f"Solution for {day}/{year} (part {part})...", "[bold cyan]done[/bold cyan]")
-    table.add_row("  [red]Debug output[/red]", "[italic]no output[/italic]" if not debug_output else "")
+    table.add_row(
+      f"Solution for {day}/{year} (part {part})...", "[bold cyan]done[/bold cyan]"
+    )
+    table.add_row(
+      "  [red]Debug output[/red]",
+      "[italic]no output[/italic]" if not debug_output else "",
+    )
     console.print(table)
     if debug_output:
       console.print(Text.from_ansi(debug_output))
 
-    table = Table(show_header=False, show_edge=False, box=None, min_width=50, pad_edge=False)
+    table = Table(
+      show_header=False, show_edge=False, box=None, min_width=50, pad_edge=False
+    )
     table.add_column("col1", justify="left")
     table.add_column("col2", justify="right")
-    table.add_row("  [green bold]Result[/green bold]", f"[green bold]{result}[/green bold]")
-    table.add_row("  [blue]Time taken[/blue]", f"[blue italic]{secs:.6f} s[/blue italic]")
+    table.add_row(
+      "  [green bold]Result[/green bold]", f"[green bold]{result}[/green bold]"
+    )
+    table.add_row(
+      "  [blue]Time taken[/blue]", f"[blue italic]{secs:.6f} s[/blue italic]"
+    )
     console.print(table)
-  
+
   if submit:
     console.print("Submitting result...")
     submit_result(year, day, part, result)
