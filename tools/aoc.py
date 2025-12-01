@@ -185,7 +185,9 @@ def run_day(
   return int(stdout), stderr, end_time - start_time
 
 
-def do_test(lang: str, year: int, day: int, test_name: str, test: dict):
+def do_test(
+  lang: str, year: int, day: int, test_name: str, test: dict, show_output: bool
+):
   part, input_text = test["part"], test["input"]
   expected = test.get("expected", None)
 
@@ -215,7 +217,7 @@ def do_test(lang: str, year: int, day: int, test_name: str, test: dict):
   expected_str = f"  expected [bold green]{expected}[/bold green]" if expected else ""
   table.add_row(expected_str, f"got [{status[1]}]{result}[/{status[1]}]")
 
-  if not expected or result != expected:
+  if not expected or result != expected or show_output:
     if debug_output:
       table.add_row(f"  [{status[1]}]Debug output[/{status[1]}]")
       console.print(table)
@@ -243,6 +245,12 @@ def test(
   part: Annotated[
     int, typer.Option(help="The number of the part to run the tests")
   ] = None,
+  show_output: Annotated[
+    bool,
+    typer.Option(
+      help="Whether to show the output of the tests if they pass (the output is always shown if they fail)"
+    ),
+  ] = False,
 ):
   problems_folder = Path(f"./problems/{year}/{day:02d}")
 
@@ -253,10 +261,10 @@ def test(
     if test == "all":
       for k, v in tests.items():
         if part is None or part == v["part"]:
-          do_test(lang, year, day, k, v)
+          do_test(lang, year, day, k, v, show_output)
     else:
       if test in tests and (part is None or part == tests[test]["part"]):
-        do_test(lang, year, day, test, tests[test])
+        do_test(lang, year, day, test, tests[test], show_output)
       else:
         console.print(
           f"Error: Test '{test}' not found (with part '{part}')", style="bold red"
