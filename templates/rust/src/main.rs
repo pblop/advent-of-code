@@ -1,11 +1,8 @@
-#[path = "../../../../../lib/rust.rs"]
 mod rust_runner;
 
 use rust_runner::runner;
 
-fn solve_pt1(input_data: &str, args: &[String]) -> i64 {
-    -1
-}
+fn solve_pt1(input_data: &str, args: &[String]) -> i64 {}
 
 fn solve_pt2(input_data: &str, args: &[String]) -> i64 {
     -1
