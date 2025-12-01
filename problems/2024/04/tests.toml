@@ -1,0 +1,57 @@
+[test_01a]
+part = 1
+input = """..X...
+.SAMX.
+.A..A.
+XMAS.S
+.X...."""
+expected = 4
+
+[test_01b]
+part = 1
+input = """MMMSXXMASM
+MSAMXMSMSA
+AMXSXMAAMM
+MSAMASMSMX
+XMASAMXAMM
+XXAMMXXAMA
+SMSMSASXSS
+SAXAMASAAA
+MAMMMXMMMM
+MXMXAXMASX"""
+expected = 18
+
+[test_01c]
+part = 1
+input = """....XXMAS.
+.SAMXMS...
+...S..A...
+..A.A.MS.X
+XMASAMX.MM
+X.....XA.A
+S.S.S.S.SS
+.A.A.A.A.A
+..M.M.M.MM
+.X.X.XMASX"""
+expected = 18
+
+[test_02a]
+part = 2
+input = """M.S
+.A.
+M.S"""
+expected = 1
+
+[test_02b]
+part = 2
+input = """.M.S......
+..A..MSMS.
+.M.S.MAA..
+..A.ASMSM.
+.M.S.M....
+..........
+S.S.S.S.S.
+.A.A.A.A..
+M.M.M.M.M.
+.........."""
+expected = 9

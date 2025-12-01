@@ -1,0 +1,71 @@
+[test_01a]
+part = 1
+input = """AAAA
+BBCD
+BBCC
+EEEC"""
+expected = 140
+
+[test_01b]
+part = 1
+input = """OOOOO
+OXOXO
+OOOOO
+OXOXO
+OOOOO"""
+expected = 772
+
+[test_01c]
+part = 1
+input = """RRRRIICCFF
+RRRRIICCCF
+VVRRRCCFFF
+VVRCCCJFFF
+VVVVCJJCFE
+VVIVCCJJEE
+VVIIICJJEE
+MIIIIIJJEE
+MIIISIJEEE
+MMMISSJEEE"""
+expected = 1930
+
+[test_02a]
+part = 2
+input = """AAAA
+BBCD
+BBCC
+EEEC"""
+expected = 80
+
+[test_02b]
+part = 2
+input = """EEEEE
+EXXXX
+EEEEE
+EXXXX
+EEEEE"""
+expected = 236
+
+[test_02c]
+part = 2
+input = """AAAAAA
+AAABBA
+AAABBA
+ABBAAA
+ABBAAA
+AAAAAA"""
+expected = 368
+
+[test_02d]
+part = 2
+input = """RRRRIICCFF
+RRRRIICCCF
+VVRRRCCFFF
+VVRCCCJFFF
+VVVVCJJCFE
+VVIVCCJJEE
+VVIIICJJEE
+MIIIIIJJEE
+MIIISIJEEE
+MMMISSJEEE"""
+expected = 1206
