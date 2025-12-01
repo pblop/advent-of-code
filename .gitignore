@@ -3,3 +3,4 @@ input*.txt
 .env
 day14/
 day142/
+.DS_Store
