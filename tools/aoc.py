@@ -125,7 +125,7 @@ def start(lang: str, year: int, day: int):
     sys.exit(1)
 
   # Copy template files to solutions folder
-  shutil.copytree(template_folder, solutions_folder)
+  shutil.copytree(template_folder, solutions_folder, symlinks=True)
 
 
 def run_day(
