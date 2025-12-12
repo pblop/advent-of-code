@@ -182,7 +182,12 @@ def run_day(
     stdout = -1
     stderr = p.stderr.strip()
 
-  return int(stdout), stderr, end_time - start_time
+  if stdout != -1:
+    text = stdout.splitlines()[-1]
+    num = int(text)
+  else:
+    num = -1
+  return num, stderr, end_time - start_time
 
 
 def do_test(
